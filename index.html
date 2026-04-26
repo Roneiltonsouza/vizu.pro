@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vizu.pro - Gerador de Site Pro</title>
+    <title>Vizu.pro - Editor</title>
     <style>
         :root { --accent-red: #ff4500; --accent-blue: #0084ff; --gray-border: #333; --sidebar-closed: 40px; --sidebar-open: 350px; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #050505; color: white; display: flex; height: 100vh; overflow: hidden; }
@@ -28,67 +28,19 @@
         .toolbar { background: #111; padding: 10px 20px; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid #222; overflow-x: auto; }
         button { padding: 8px 14px; border-radius: 6px; font-weight: bold; font-size: 10px; cursor: pointer; border: 1px solid var(--gray-border); background: #1a1a1a; color: white; white-space: nowrap; }
         .btn-run { background: var(--accent-red); border: none; }
-        .btn-gerador { border-color: #00ffff; color: #00ffff; }
+        .btn-clear { border-color: #555; color: #aaa; }
+        .btn-clear:hover { background: #333; color: #fff; }
         
         .preview-area { flex: 1; display: flex; justify-content: center; align-items: center; background: #000; padding: 10px; }
         .square-screen { width: 98%; height: 98%; background: #000; border: 2px solid var(--accent-red); border-radius: 8px; overflow: hidden; position: relative; }
         iframe { width: 100%; height: 100%; border: none; background: white; }
-
-        /* MODAL DO GERADOR */
-        #modal-gerador { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: none; justify-content: center; align-items: center; }
-        .gerador-container { width: 90%; max-width: 500px; background: #0a0a0a; border: 2px solid #ff4500; border-radius: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 30px rgba(255, 69, 0, 0.5); }
-        .gerador-input { width: 100%; background: #111; border: 1px solid #333; color: #00ff00; padding: 12px; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; outline: none; }
-        .close-modal { float: right; color: #ff4500; font-weight: bold; cursor: pointer; }
-
-        .g-tabs { display: flex; gap: 5px; margin-bottom: 20px; }
-        .g-tab-btn { flex: 1; background: #1a1a1a; font-size: 10px; padding: 10px; border: 1px solid #333; color: #aaa; border-radius: 8px; cursor: pointer; }
-        .g-tab-btn.active { background: #ff4500; color: #fff; }
-        .g-content { display: none; }
-        .g-content.active { display: block; }
-        .site-item { background: #111; border: 1px solid #333; padding: 12px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid #ff4500; }
     </style>
 </head>
 <body>
 
-<div id="modal-gerador">
-    <div class="gerador-container">
-        <span class="close-modal" onclick="fecharGerador()">[ FECHAR ]</span>
-        <h2 style="color: #ff4500; text-align: center;">VIZU GERADOR PRO</h2>
-        
-        <div id="gerador-login">
-            <p style="text-align: center; font-size: 11px; color: #777;">ACESSO PROTEGIDO</p>
-            <input type="password" id="senha-gerador" class="gerador-input" placeholder="Digite a Senha Mestra">
-            <button class="btn-run" onclick="validarSenha()" style="width: 100%; padding: 15px;">ENTRAR NO GERADOR</button>
-        </div>
-
-        <div id="gerador-painel" style="display: none;">
-            <div class="g-tabs">
-                <button class="g-tab-btn active" onclick="gTab('g-novo')">➕ PUBLICAR</button>
-                <button class="g-tab-btn" onclick="gTab('g-lista'); listarProjetosVercel();">📂 MEUS SITES</button>
-                <button class="g-tab-btn" onclick="gTab('g-config')">⚙️ TOKEN</button>
-            </div>
-
-            <div id="g-novo" class="g-content active">
-                <label style="font-size: 10px; color: #ff4500;">NOME DO SITE</label>
-                <input type="text" id="g-nome" class="gerador-input" placeholder="ex: meu-site-pro">
-                <button class="btn-run" style="width: 100%; padding: 15px;" onclick="fazerDeployVercel()">🚀 ENVIAR PARA NUVEM</button>
-                <div id="g-status" style="margin-top: 15px; text-align: center; font-size: 12px;"></div>
-            </div>
-
-            <div id="g-lista" class="g-content">
-                <div id="g-lista-sites">Sincronizando...</div>
-            </div>
-
-            <div id="g-config" class="g-content">
-                <button class="btn-run" style="background:#444; width:100%" onclick="resetarChave()">🗑️ APAGAR TOKEN SALVO</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="sidebar-container" id="sidebar">
     <div class="editor-wrapper">
-        <textarea id="code-editor" oninput="saveAuto()"></textarea>
+        <textarea id="code-editor" oninput="saveAuto()" placeholder="Cole seu código aqui..."></textarea>
     </div>
     <div class="toggle-tab" onclick="toggleSidebar()"><span id="toggle-icon">&lt;</span></div>
 </div>
@@ -96,13 +48,13 @@
 <div class="main-container">
     <header>
         <div class="logo">VIZU<span>.PRO</span></div>
-        <div class="led-mem" id="led-status" onclick="restaurarDaMemoria()"></div>
+        <div class="led-mem" id="led-status" onclick="restaurarDaMemoria()" title="Restaurar da Memória"></div>
         <button onclick="salvarLocal()">💾 SALVAR HTML</button>
     </header>
 
     <div class="toolbar">
         <button class="btn-run" onclick="rodarArquivo()">▶ RODAR</button>
-        <button class="btn-gerador" onclick="abrirGerador()">🌐 GERADOR SITE</button>
+        <button class="btn-clear" onclick="limparEditor()">🗑️ LIMPAR TELA</button>
         <button onclick="document.getElementById('memory-input').click()">📁 GALERIA</button>
     </div>
 
@@ -118,87 +70,61 @@
     const iframe = document.getElementById('preview-frame');
     const led = document.getElementById('led-status');
 
-    function obterToken() {
-        let token = localStorage.getItem('vercel_token_blindado');
-        if (!token) {
-            token = prompt("🔐 Digite seu Token da Vercel:");
-            if (token) localStorage.setItem('vercel_token_blindado', token);
-        }
-        return token;
-    }
-
-    function resetarChave() {
-        localStorage.removeItem('vercel_token_blindado');
-        alert("Token removido!");
-    }
-
-    function abrirGerador() { document.getElementById('modal-gerador').style.display = 'flex'; }
-    function fecharGerador() { document.getElementById('modal-gerador').style.display = 'none'; }
-
-    function validarSenha() {
-        if(document.getElementById('senha-gerador').value === "Rdg@vizusite") {
-            document.getElementById('gerador-login').style.display = 'none';
-            document.getElementById('gerador-painel').style.display = 'block';
-        } else { alert("Senha Incorreta!"); }
-    }
-
-    function gTab(id) {
-        document.querySelectorAll('.g-content').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.g-tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        event.currentTarget.classList.add('active');
-    }
-
-    async function fazerDeployVercel() {
-        const token = obterToken();
-        const nome = document.getElementById('g-nome').value.trim();
-        const status = document.getElementById('g-status');
-        if(!token || !nome) return alert("Falta o nome ou token!");
-
-        status.innerHTML = "⚡ Publicando...";
-        try {
-            const res = await fetch('https://api.vercel.com/v13/deployments', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: nome, files: [{ file: 'index.html', data: editor.value }] })
-            });
-            const data = await res.json();
-            if(data.url) status.innerHTML = `<a href="https://${data.url}" target="_blank" style="color:#00ffff">✅ SITE NO AR!</a>`;
-            else status.innerHTML = "❌ Erro no deploy.";
-        } catch (e) { status.innerHTML = "❌ Falha de rede."; }
-    }
-
-    async function listarProjetosVercel() {
-        const token = obterToken();
-        const lista = document.getElementById('g-lista-sites');
-        lista.innerHTML = "Carregando...";
-        try {
-            const res = await fetch('https://api.vercel.com/v9/projects', { headers: { 'Authorization': `Bearer ${token}` }});
-            const data = await res.json();
-            lista.innerHTML = "";
-            data.projects.forEach(p => {
-                lista.innerHTML += `<div class="site-item"><b>${p.name.toUpperCase()}</b></div>`;
-            });
-        } catch (e) { lista.innerHTML = "Erro."; }
-    }
-
     function rodarArquivo() {
         const blob = new Blob([editor.value], {type: 'text/html'});
         iframe.src = URL.createObjectURL(blob);
     }
 
-    function saveAuto() { localStorage.setItem('index_vizu', editor.value); updateStatus(); }
+    function limparEditor() {
+        if (confirm("Deseja limpar todo o código do editor?")) {
+            editor.value = '';
+            iframe.src = 'about:blank';
+            saveAuto();
+            updateStatus();
+        }
+    }
+
+    function saveAuto() { 
+        localStorage.setItem('index_vizu', editor.value); 
+        updateStatus(); 
+    }
+
     function updateStatus() {
         const salvo = localStorage.getItem('index_vizu');
         led.className = (salvo && salvo.trim() !== "") ? 'led-mem' : 'led-mem led-empty';
     }
+
     function restaurarDaMemoria() {
         const salvo = localStorage.getItem('index_vizu');
-        if (salvo) { editor.value = salvo; rodarArquivo(); }
+        if (salvo) { 
+            editor.value = salvo; 
+            rodarArquivo(); 
+        }
     }
+
     function toggleSidebar() { 
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('is-open'); 
+    }
+
+    function salvarLocal() {
+        const blob = new Blob([editor.value], {type: 'text/html'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'projeto_vizu.html';
+        link.click();
+    }
+
+    function fixarArquivo(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            editor.value = e.target.result;
+            rodarArquivo();
+            saveAuto();
+        };
+        reader.readAsText(file);
     }
 
     window.onload = () => {
